@@ -3,7 +3,10 @@ from app.schemas.stt_schema import (
     TranscriptionRequest,
     TranscriptionResponse
 )
-from app.services.stt_service import stt_service
+from app.services.providers import (
+    get_stt_service,
+    ProviderNotReadyError
+)
 
 router = APIRouter(
     prefix="/ai/v1/transcriptions",
@@ -17,9 +20,20 @@ router = APIRouter(
 def start_transcription(
     request: TranscriptionRequest
 ):
-    return stt_service.start_transcription(
-        request
-    )
+
+    try:
+
+        service = get_stt_service()
+
+        return service.start_transcription(
+            request
+        )
+
+    except ProviderNotReadyError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error)
+        )
 
 @router.get(
     "/{jobId}",
@@ -27,9 +41,19 @@ def start_transcription(
 )
 def get_transcription(jobId: str):
 
-    result = stt_service.get_transcription(
-        jobId
-    )
+    try:
+
+        service = get_stt_service()
+
+        result = service.get_transcription(
+            jobId
+        )
+
+    except ProviderNotReadyError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error)
+        )
 
     if result is None:
         raise HTTPException(

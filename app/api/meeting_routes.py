@@ -4,8 +4,9 @@ from app.schemas.meeting_schema import (
     MeetingAnalyzeRequest,
     MeetingAnalyzeResponse
 )
-from app.services.meeting_analyzer import (
-    MeetingAnalyzer
+from app.services.providers import (
+    get_meeting_analyzer,
+    ProviderNotReadyError
 )
 
 logger = logging.getLogger(__name__)
@@ -31,9 +32,16 @@ def analyze_meeting(
         )
 
     try:
-        analyzer = MeetingAnalyzer()
+
+        analyzer = get_meeting_analyzer()
 
         return analyzer.analyze(request)
+
+    except ProviderNotReadyError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error)
+        )
 
     except Exception:
         logger.exception("회의록 분석 실패")
