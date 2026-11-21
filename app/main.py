@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.api.issue_routes import router as issue_router
-
+from app.api.document_routes import router as document_router
 
 app = FastAPI(
     title="FlowMate AI Server",
@@ -8,6 +8,7 @@ app = FastAPI(
 )
 
 app.include_router(issue_router)
+app.include_router(document_router)
 
 @app.get("/health")
 def health_check():

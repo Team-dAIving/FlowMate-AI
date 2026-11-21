@@ -1,18 +1,13 @@
-import json
-
-from app.services.bedrock_service import BedrockService
-from app.prompts.issue_prompt import (
-    SYSTEM_PROMPT,
-    build_issue_prompt
-)
-
 from app.schemas.issue_schema import (
     IssueGenerateRequest,
     IssueGenerateResponse,
     IssueDraft
 )
 
+from app.services.issue_validator import validate_issues
+
 class IssueGenerator:
+
     def generate(
         self,
         request: IssueGenerateRequest
@@ -21,7 +16,7 @@ class IssueGenerator:
         start = request.project.startDate
         end = request.project.endDate
 
-        return IssueGenerateResponse(
+        response = IssueGenerateResponse(
             issues=[
                 IssueDraft(
                     title="프로젝트 요구사항 분석",
@@ -45,3 +40,5 @@ class IssueGenerator:
                 )
             ]
         )
+
+        return validate_issues(request, response)

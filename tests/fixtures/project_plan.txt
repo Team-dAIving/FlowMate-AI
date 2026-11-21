@@ -1,0 +1,18 @@
+프로젝트명: FlowMate
+
+프로젝트 목표:
+AI 기반 팀 프로젝트 관리 서비스 개발
+
+주요 기능:
+1. 사용자 로그인 및 회원가입
+2. 프로젝트 생성
+3. 팀원별 업무 관리
+4. GitHub Issue 연동
+5. AI 회의록 자동 요약
+6. 회의록 기반 업무 생성 및 수정
+
+개발 기술:
+React, TypeScript, Spring Boot, PostgreSQL, FastAPI
+
+개발 기간:
+4주
