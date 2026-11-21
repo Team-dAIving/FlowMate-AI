@@ -2,6 +2,9 @@ from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
 from app.config import get_settings
+from app.core.exception_handlers import (
+    register_exception_handlers
+)
 from app.api.issue_routes import router as issue_router
 from app.api.document_routes import router as document_router
 from app.api.stt_routes import router as stt_router
@@ -14,11 +17,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+register_exception_handlers(app)
+
 app.include_router(issue_router)
 app.include_router(document_router)
 app.include_router(stt_router)
 app.include_router(meeting_router)
 class HealthResponse(BaseModel):
+
     status: Literal["ok"] = "ok"
     service: Literal["flowmate-ai"] = "flowmate-ai"
     mode: Literal["mock", "aws"] = "mock"

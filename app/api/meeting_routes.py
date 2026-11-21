@@ -1,5 +1,7 @@
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from app.core.exceptions import FlowMateError
+from app.schemas.error_schema import ErrorResponse
 from app.schemas.meeting_schema import (
     MeetingAnalyzeRequest,
     MeetingAnalyzeResponse
@@ -19,16 +21,24 @@ router = APIRouter(
 @router.post(
     "/analyze",
     response_model=MeetingAnalyzeResponse,
-    response_model_exclude_unset=True
+    response_model_exclude_unset=True,
+    responses={
+        422: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+        503: {"model": ErrorResponse}
+    }
 )
+
 def analyze_meeting(
     request: MeetingAnalyzeRequest
 ):
 
     if request.meetingId != request.transcript.meetingId:
-        raise HTTPException(
-            status_code=422,
-            detail="회의 ID가 일치하지 않습니다."
+
+        raise FlowMateError(
+            code="MEETING_ID_MISMATCH",
+            message="회의 ID가 일치하지 않습니다.",
+            status_code=422
         )
 
     try:
@@ -38,15 +48,19 @@ def analyze_meeting(
         return analyzer.analyze(request)
 
     except ProviderNotReadyError as error:
-        raise HTTPException(
-            status_code=503,
-            detail=str(error)
-        )
 
-    except Exception:
+        raise FlowMateError(
+            code="PROVIDER_NOT_READY",
+            message=str(error),
+            status_code=503
+        ) from error
+
+    except Exception as error:
+
         logger.exception("회의록 분석 실패")
 
-        raise HTTPException(
-            status_code=500,
-            detail="회의록 분석에 실패했습니다."
-        )
+        raise FlowMateError(
+            code="MEETING_ANALYSIS_FAILED",
+            message="회의록 분석에 실패했습니다.",
+            status_code=500
+        ) from error
