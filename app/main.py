@@ -27,7 +27,7 @@ class HealthResponse(BaseModel):
 
     status: Literal["ok"] = "ok"
     service: Literal["flowmate-ai"] = "flowmate-ai"
-    mode: Literal["mock", "aws"] = "mock"
+    mode: Literal["mock", "aws", "ollama"] = "mock"
 
 @app.get(
     "/health",

@@ -123,4 +123,37 @@ def validate_action_items(
             if segment_id not in valid_segment_ids:
                 raise ValueError("잘못된 결정 사항 근거입니다.")
 
+    for item in response.actionItems:
+        if item.actionType != "UPDATE":
+            continue
+
+        if item.changes is None:
+            continue
+
+        changes = item.changes.model_dump(
+            exclude_unset=True
+        )
+
+        if set(changes) != {"dueDate"}:
+            continue
+
+        old_task = existing_tasks[item.targetTaskId]
+
+        if changes["dueDate"] == old_task.dueDate:
+            item.actionType = "NEEDS_REVIEW"
+            item.targetTaskId = None
+            item.changes = None
+            item.dueDate = None
+            item.requiresReview = True
+            item.reason = (
+                "일정 변경이 언급되었지만 "
+                "새로운 마감일이 확인되지 않았습니다."
+            )
+
+            message = (
+                f"{item.title}의 새로운 마감일 확인 필요"
+            )
+
+            if message not in response.unresolvedItems:
+                response.unresolvedItems.append(message)
     return response

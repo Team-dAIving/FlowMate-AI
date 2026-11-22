@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     app_name: str = "FlowMate AI Server"
 
-    ai_mode: Literal["mock", "aws"] = "mock"
+    ai_mode: Literal["mock", "aws", "ollama"] = "mock"
 
     aws_region: str = "ap-northeast-2"
 

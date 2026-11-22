@@ -83,3 +83,24 @@ def get_transcription(jobId: str):
         )
 
     return result
+
+# --- Local Whisper upload endpoint (addition; existing JSON endpoint unchanged) ---
+from fastapi import File, Form, UploadFile
+
+@router.post("/upload", response_model=TranscriptionResponse,
+             responses={422: {"model": ErrorResponse}, 503: {"model": ErrorResponse}})
+def upload_transcription(
+    meetingId: int = Form(..., gt=0),
+    file: UploadFile = File(...),
+):
+    try:
+        service = get_stt_service()
+        if not hasattr(service, "start_uploaded_file"):
+            raise ProviderNotReadyError("파일 업로드 STT는 AI_MODE=ollama에서만 지원합니다.")
+        return service.start_uploaded_file(meetingId, file.filename or "", file.file)
+    except ProviderNotReadyError as error:
+        raise FlowMateError(code="PROVIDER_NOT_READY", message=str(error), status_code=503) from error
+    except (ValueError, FileNotFoundError) as error:
+        raise FlowMateError(code="INVALID_AUDIO_FILE", message=str(error), status_code=422) from error
+    finally:
+        file.file.close()
